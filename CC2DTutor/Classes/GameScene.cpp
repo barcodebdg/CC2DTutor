@@ -88,23 +88,24 @@ bool GameLayer::init()
 
 void GameLayer::shoot(float elapsed)
 {
-    // store ship Y position for later
-    int yPos = shipSp->getPosition().y;
+    // set initial bullet position in front of the ship
+    CCPoint initPos = ccp(shipSp->getPosition().x + 20, shipSp->getPosition().y);
     
     // create bullet in front of the ship (20px from ship X position)
     CCSprite* b = CCSprite::create("Bullet.png");
-    b->setPosition( ccp(shipSp->getPosition().x + 20, yPos) );
+    b->setPosition( initPos );
     this->addChild(b);
     
     // add this bullet to bullet list
     bullets->addObject(b);
     
-    float duration = 1.0f; // bullet speed. smaller is faster
+    int targetXPos = CCDirector::sharedDirector()->getWinSize().width + b->getContentSize().width;
+    float duration = (targetXPos - initPos.x) / 100.0f; // bullet speed
     
     // Create the actions
     
     // this should move the bullets to the right
-	CCFiniteTimeAction* actionMove = CCMoveTo::create( duration, ccp(CCDirector::sharedDirector()->getWinSize().width + b->getContentSize().width, yPos) );
+	CCFiniteTimeAction* actionMove = CCMoveTo::create( duration, ccp(targetXPos, initPos.y) );
 	CCFiniteTimeAction* actionMoveDone = CCCallFuncN::create(this, callfuncN_selector(GameLayer::spriteMoveFinished));
     b->runAction( CCSequence::create(actionMove, actionMoveDone, NULL) );
     b->setTag(1);   // this will help us to remove the bullet from bullet list later on
@@ -131,7 +132,7 @@ void GameLayer::addAsteroid(float elapsed)
 	this->addChild(target);
     
 	// Determine speed of the target
-	int minDuration = (int)2.0;
+    int minDuration = (int)2.0;
 	int maxDuration = (int)4.0;
 	int rangeDuration = maxDuration - minDuration;
 	// srand( TimGetTicks() );
